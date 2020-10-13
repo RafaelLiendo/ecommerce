@@ -4,4 +4,6 @@ PROJECT_NAME = "ecommerce"
 
 SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
 
-API_V1_STR = "/api/v1"
+SHOP_API = "/"
+AUTH_API = "/auth"
+ADMIN_API = "/admin"
