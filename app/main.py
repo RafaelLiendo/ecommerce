@@ -11,10 +11,11 @@ from app.core.celery_app import celery_app
 from app import tasks
 
 
-app = FastAPI(
-    title=config.PROJECT_NAME, docs_url="/api/docs", openapi_url="/api"
-)
+app = FastAPI(title=config.PROJECT_NAME, docs_url="/")
 
+auth = FastAPI(title=config.PROJECT_NAME + " auth", docs_url="/")
+
+admin = FastAPI(title=config.PROJECT_NAME + " admin", docs_url="/")
 
 @app.middleware("http")
 async def db_session_middleware(request: Request, call_next):
@@ -23,27 +24,19 @@ async def db_session_middleware(request: Request, call_next):
     request.state.db.close()
     return response
 
-
-@app.get("/api/v1")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/api/v1/task")
-async def example_task():
-    celery_app.send_task("app.tasks.example_task", args=["Hello World"])
-
-    return {"message": "success"}
-
-
 # Routers
 app.include_router(
     users_router,
-    prefix="/api/v1",
     tags=["users"],
     dependencies=[Depends(get_current_active_user)],
 )
-app.include_router(auth_router, prefix="/api", tags=["auth"])
+auth.include_router(auth_router, tags=["auth"])
+
+app.mount('/auth', auth);
+
+admin.include_router(users_router, tags=["users"])
+
+app.mount('/admin', admin)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8000)
