@@ -13,8 +13,10 @@ users_router = router = APIRouter()
 async def users_list(
     db=Depends(get_db),
     current_user=Depends(get_current_active_superuser),
+    skip: int = 0,
+    limit: int = 100,
 ):
-    users = get_users(db)
+    users = get_users(db, skip=skip, limit=limit)
     return users
 
 
